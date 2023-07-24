@@ -1,0 +1,6 @@
+name: todo_app
+channels:
+  - defaults
+prefix: /home/davidqin/miniconda3/envs/todo_app
+dependencies:
+  - python>=3.10
