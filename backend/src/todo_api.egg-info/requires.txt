@@ -1,0 +1,6 @@
+flask
+pytest
+marshmallow
+bson
+pymongo
+pylint

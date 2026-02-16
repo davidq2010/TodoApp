@@ -1,0 +1,37 @@
+[build-system]
+# https://setuptools.pypa.io/en/latest/userguide/development_mode.html
+# No need for wheel: https://setuptools.pypa.io/en/latest/userguide/quickstart.html#basic-use
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "todo_api"
+requires-python = ">=3.10"
+classifiers = [
+  "Programming Language :: Python :: 3"
+]
+# Make dynamic later
+version = "1.0.0"
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+# This isn't required (i.e., automatic discovery)
+# https://setuptools.pypa.io/en/latest/userguide/package_discovery.html
+#[tool.setuptools.packages]
+#find = {}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = [
+        "test"
+]
+log_format = "%(asctime)s %(levelname)s %(message)s"
+log_date_format = "%Y-%m-%d %H:%M:%S"
+log_cli = true
+log_cli_level = "WARNING"
+log_file = "pytest.log"
+log_file_level = "DEBUG"
