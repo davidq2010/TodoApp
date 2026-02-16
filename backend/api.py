@@ -10,6 +10,8 @@ import bson
 DEBUG = True
 
 app = Flask(__name__)
+# When serializing Task, exclude these fields (they're not required in
+# TaskSchema and thus can be excluded)
 create_req_task_schema = TaskSchema(exclude=['_id', 'created_at',
     'detail', 'work_hr_est'], unknown='RAISE')
 update_req_task_schema = TaskSchema(unknown='RAISE')
@@ -17,7 +19,8 @@ db_handler = MongoDBHandler("mongodb://127.0.0.1:27017")
 
 @app.route("/tasks", methods=['GET', 'POST'])
 def tasks():
-    # What happens if non GET or POST? TODO: Give it a try
+    # What happens if non GET or POST? TODO: Give it a try, then handle the else
+    # Shouldn't even be possible b/c front end won't send any other request
     if request.method == "GET":
         return get_tasks()
     elif request.method == "POST":
@@ -40,6 +43,7 @@ def edit_tasks(task_id: str):
 
 def delete_task(task_id: str):
     if DEBUG: print("Deleting task:", task_id)
+    # Success if delete count == 1
     return ({'message': 'Task deleted'}
             if db_handler.delete(CollectionType.TASK,
                 bson.ObjectId(task_id)) == 1
@@ -49,6 +53,7 @@ def update_task(task_id: str, data: Dict):
     if DEBUG: print("Updating task:", task_id)
     try:
         if DEBUG: print("UpdateTask data: ", data)
+        # Deserialize the updated dict from the request; should have an _id_
         new_task = update_req_task_schema.load(data)
     except ValidationError as err: # TODO: See what happens when deserialization fails
         return ({'message': 'Bad request parameters: {}'.format(
@@ -68,10 +73,13 @@ def create_task(data: Dict):
     # Deserialize request into Task
     try:
         if DEBUG: print("CreateTask data: ", data)
-        new_task = create_req_task_schema.load(data) # dict now has creation time
+        # After this, task has a bunch of stuff, given a creation time,
+        # but no _id
+        new_task = create_req_task_schema.load(data)
     except ValidationError as err: # TODO: See what happens when deserialization fails
         return ({'message': 'Bad request parameters: {}'.format(
             err.messages)}, 400)
+    # After this, task has been assigned an _id and inserted into db
     db_resp = db_handler.create(new_task)
     # Converted to (json, 200 status code) by Flask
     if DEBUG: print("Create task db_resp: {}".format(db_resp))
